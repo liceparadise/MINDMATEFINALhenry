@@ -1,0 +1,251 @@
+{% extends 'mood_tracker/base.html' %}
+
+{% block title %}Track Your Mood - MindMate{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="mb-2">
+                    <i class="fas fa-heart text-primary me-2"></i>
+                    How are you feeling?
+                </h2>
+                <p class="text-muted mb-0">Take a moment to check in with yourself</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Mood Selection -->
+                    <div class="mb-4">
+                        <label class="form-label h5">
+                            <i class="fas fa-smile me-2"></i>Select your mood:
+                        </label>
+                        <div class="row g-3 mt-2">
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="very_happy" id="very_happy">
+                                <label class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center py-3" for="very_happy">
+                                    <div class="display-4 mb-2">😄</div>
+                                    <span class="fw-bold">Very Happy</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="happy" id="happy">
+                                <label class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center py-3" for="happy">
+                                    <div class="display-4 mb-2">😊</div>
+                                    <span class="fw-bold">Happy</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="neutral" id="neutral">
+                                <label class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center py-3" for="neutral">
+                                    <div class="display-4 mb-2">😐</div>
+                                    <span class="fw-bold">Neutral</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="sad" id="sad">
+                                <label class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center py-3" for="sad">
+                                    <div class="display-4 mb-2">😢</div>
+                                    <span class="fw-bold">Sad</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="anxious" id="anxious">
+                                <label class="btn btn-outline-danger w-100 h-100 d-flex flex-column align-items-center py-3" for="anxious">
+                                    <div class="display-4 mb-2">😰</div>
+                                    <span class="fw-bold">Anxious</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="angry" id="angry">
+                                <label class="btn btn-outline-danger w-100 h-100 d-flex flex-column align-items-center py-3" for="angry">
+                                    <div class="display-4 mb-2">😠</div>
+                                    <span class="fw-bold">Angry</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="excited" id="excited">
+                                <label class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center py-3" for="excited">
+                                    <div class="display-4 mb-2">🤩</div>
+                                    <span class="fw-bold">Excited</span>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <input type="radio" class="btn-check" name="mood" value="calm" id="calm">
+                                <label class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center py-3" for="calm">
+                                    <div class="display-4 mb-2">😌</div>
+                                    <span class="fw-bold">Calm</span>
+                                </label>
+                            </div>
+                        </div>
+                        {% if form.mood.errors %}
+                            <div class="text-danger small mt-2">
+                                {% for error in form.mood.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Intensity Slider -->
+                    <div class="mb-4">
+                        <label for="{{ form.intensity.id_for_label }}" class="form-label h5">
+                            <i class="fas fa-thermometer-half me-2"></i>Intensity Level: <span id="intensityValue">5</span>/10
+                        </label>
+                        <input type="range" class="form-range" name="intensity" id="intensity" min="1" max="10" value="5" step="1">
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>1 - Very Low</span>
+                            <span>10 - Very High</span>
+                        </div>
+                        {% if form.intensity.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.intensity.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="mb-4">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label h5">
+                            <i class="fas fa-sticky-note me-2"></i>Notes (Optional)
+                        </label>
+                        {{ form.notes }}
+                        <div class="form-text">
+                            <small class="text-muted">
+                                What's contributing to this mood? Any thoughts or events you'd like to remember?
+                            </small>
+                        </div>
+                        {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-save me-2"></i>Save Mood
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>Mood Tracking Tips
+                </h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Be honest about how you're feeling - there are no wrong answers
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Try to track your mood at the same time each day
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Include notes about what might be influencing your mood
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .btn-check:checked + .btn {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .form-range {
+        height: 8px;
+    }
+    
+    .form-range::-webkit-slider-thumb {
+        height: 20px;
+        width: 20px;
+        background: #7dd3fc;
+    }
+    
+    .form-range::-moz-range-thumb {
+        height: 20px;
+        width: 20px;
+        background: #7dd3fc;
+        border: none;
+        border-radius: 50%;
+    }
+    
+    .mood-option {
+        transition: all 0.3s ease;
+    }
+    
+    .mood-option:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const intensitySlider = document.getElementById('intensity');
+        const intensityValue = document.getElementById('intensityValue');
+        const form = document.querySelector('form');
+        
+        // Update intensity value display
+        intensitySlider.addEventListener('input', function() {
+            intensityValue.textContent = this.value;
+            
+            // Change color based on intensity
+            const value = parseInt(this.value);
+            let color = '#64748b';
+            
+            if (value <= 3) color = '#f87171';
+            else if (value <= 5) color = '#fbbf24';
+            else if (value <= 7) color = '#fb923c';
+            else color = '#4ade80';
+            
+            intensityValue.style.color = color;
+        });
+        
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            const moodSelected = document.querySelector('input[name="mood"]:checked');
+            
+            if (!moodSelected) {
+                e.preventDefault();
+                alert('Please select a mood before saving.');
+                return false;
+            }
+        });
+        
+        // Add animation to mood buttons
+        const moodButtons = document.querySelectorAll('.btn-check + label');
+        moodButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                moodButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

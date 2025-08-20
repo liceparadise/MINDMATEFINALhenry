@@ -1,0 +1,240 @@
+{% extends 'mood_tracker/base.html' %}
+
+{% block title %}Achievements - MindMate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .achievement-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .achievement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+    
+    .achievement-unlocked {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #1e293b;
+    }
+    
+    .achievement-locked {
+        background: rgba(255, 255, 255, 0.95);
+        color: #64748b;
+    }
+    
+    .achievement-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .achievement-unlocked .achievement-icon {
+        color: #f59e0b;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .achievement-locked .achievement-icon {
+        color: #94a3b8;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7dd3fc, #86efac);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .achievement-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #10b981;
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .category-header {
+        background: linear-gradient(135deg, #7dd3fc 0%, #86efac 100%);
+        color: #1e293b;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h1 class="display-4 fw-bold text-dark mb-3">
+                    <i class="fas fa-trophy text-warning me-3"></i>
+                    Achievements
+                </h1>
+                <p class="lead text-muted">Track your progress and unlock rewards for your mental wellness journey</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-3">
+            <div class="stats-card">
+                <i class="fas fa-trophy fa-2x mb-2"></i>
+                <h3>{{ unlocked_count }}</h3>
+                <p class="mb-0">Unlocked</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stats-card">
+                <i class="fas fa-target fa-2x mb-2"></i>
+                <h3>{{ total_achievements }}</h3>
+                <p class="mb-0">Total</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stats-card">
+                <i class="fas fa-percentage fa-2x mb-2"></i>
+                <h3>{% widthratio unlocked_count total_achievements 100 %}%</h3>
+                <p class="mb-0">Complete</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Achievements by Category -->
+    {% regroup achievement_data by achievement.achievement_type as achievement_categories %}
+    
+    {% for category in achievement_categories %}
+        <div class="category-header">
+            <h3 class="mb-0">
+                {% if category.grouper == 'mood_streak' %}
+                    <i class="fas fa-fire me-2"></i>Mood Streaks
+                {% elif category.grouper == 'journal_count' %}
+                    <i class="fas fa-book me-2"></i>Journal Entries
+                {% elif category.grouper == 'mood_count' %}
+                    <i class="fas fa-heart me-2"></i>Mood Tracking
+                {% elif category.grouper == 'consistency' %}
+                    <i class="fas fa-calendar-check me-2"></i>Consistency
+                {% else %}
+                    <i class="fas fa-star me-2"></i>Milestones
+                {% endif %}
+            </h3>
+        </div>
+        
+        <div class="row mb-4">
+            {% for data in category.list %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card achievement-card {% if data.is_unlocked %}achievement-unlocked{% else %}achievement-locked{% endif %} h-100">
+                        {% if data.is_unlocked %}
+                            <div class="achievement-badge">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body text-center d-flex flex-column">
+                            <div class="achievement-icon">
+                                <i class="{{ data.achievement.icon }}"></i>
+                            </div>
+                            
+                            <h5 class="card-title fw-bold mb-2">{{ data.achievement.name }}</h5>
+                            <p class="card-text mb-3 flex-grow-1">{{ data.achievement.description }}</p>
+                            
+                            {% if not data.is_unlocked %}
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-muted">Progress</small>
+                                        <small class="text-muted">{{ data.current_progress }}/{{ data.achievement.requirement_value }}</small>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ data.progress_percentage }}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="requirement-text">
+                                    <small class="text-muted">
+                                        <strong>Requirement:</strong>
+                                        {% if data.achievement.achievement_type == 'mood_streak' %}
+                                            Track your mood for {{ data.achievement.requirement_value }} consecutive days
+                                        {% elif data.achievement.achievement_type == 'journal_count' %}
+                                            Write {{ data.achievement.requirement_value }} journal entries
+                                        {% elif data.achievement.achievement_type == 'mood_count' %}
+                                            Record {{ data.achievement.requirement_value }} mood entries
+                                        {% elif data.achievement.achievement_type == 'consistency' %}
+                                            Track your mood on {{ data.achievement.requirement_value }} different days in a month
+                                        {% else %}
+                                            Complete {{ data.achievement.requirement_value }} activities
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            {% else %}
+                                <div class="unlocked-info">
+                                    <div class="badge bg-success mb-2">
+                                        <i class="fas fa-trophy me-1"></i>
+                                        {{ data.achievement.points }} Points
+                                    </div>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Unlocked {{ data.unlocked_at|date:"M d, Y" }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">No Achievements Available</h3>
+            <p class="text-muted">Check back later for new achievements to unlock!</p>
+        </div>
+    {% endfor %}
+    
+    <!-- Motivational Message -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="card-body py-4">
+                    <h4 class="mb-3">
+                        <i class="fas fa-star me-2"></i>
+                        Keep Going!
+                    </h4>
+                    <p class="mb-0 lead">
+                        Every mood entry and journal post brings you closer to your next achievement. 
+                        Your mental wellness journey matters!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

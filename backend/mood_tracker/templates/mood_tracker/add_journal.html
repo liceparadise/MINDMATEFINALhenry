@@ -1,0 +1,284 @@
+{% extends 'mood_tracker/base.html' %}
+
+{% block title %}Write Journal Entry - MindMate{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-2">
+                    <i class="fas fa-pen text-primary me-2"></i>
+                    Write Journal Entry
+                </h2>
+                {% if mood_entry %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-link me-2"></i>
+                        This journal entry will be linked to your <strong>{{ mood_entry.get_mood_display }}</strong> mood ({{ mood_entry.intensity }}/10) from {{ mood_entry.date|date:"M d, Y" }}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Express your thoughts and reflect on your day</p>
+                {% endif %}
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label for="{{ form.title.id_for_label }}" class="form-label h5">
+                            <i class="fas fa-heading me-2"></i>Title (Optional)
+                        </label>
+                        {{ form.title }}
+                        <div class="form-text">
+                            <small class="text-muted">
+                                Give your journal entry a meaningful title
+                            </small>
+                        </div>
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="mb-4">
+                        <label for="{{ form.content.id_for_label }}" class="form-label h5">
+                            <i class="fas fa-edit me-2"></i>Your Thoughts
+                        </label>
+                        {{ form.content }}
+                        <div class="form-text d-flex justify-content-between">
+                            <small class="text-muted">
+                                What's on your mind? How are you feeling? What happened today?
+                            </small>
+                            <small class="text-muted" id="charCount">0 characters</small>
+                        </div>
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.content.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-3 justify-content-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-save me-2"></i>Save Journal Entry
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Writing Tips Card -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-lightbulb text-warning me-2"></i>Journaling Tips
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Write freely without worrying about grammar
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Focus on your emotions and experiences
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Be honest and authentic with yourself
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Include details about your day
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Reflect on what you're grateful for
+                            </li>
+                            <li class="mb-0">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Note any patterns or insights
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Journal Prompts Card -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-question-circle text-info me-2"></i>Need inspiration? Try these prompts:
+                </h6>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-sm w-100 prompt-btn" data-prompt="What made me smile today?">
+                            What made me smile today?
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-sm w-100 prompt-btn" data-prompt="What challenged me today and how did I handle it?">
+                            What challenged me today?
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-sm w-100 prompt-btn" data-prompt="What am I grateful for right now?">
+                            What am I grateful for?
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-sm w-100 prompt-btn" data-prompt="How do I want to feel tomorrow?">
+                            How do I want to feel tomorrow?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control {
+        border-radius: 10px;
+    }
+    
+    #id_content {
+        min-height: 200px;
+        resize: vertical;
+    }
+    
+    .prompt-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .prompt-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contentTextarea = document.getElementById('id_content');
+        const charCount = document.getElementById('charCount');
+        const form = document.querySelector('form');
+        const promptButtons = document.querySelectorAll('.prompt-btn');
+        
+        // Character count
+        function updateCharCount() {
+            const count = contentTextarea.value.length;
+            charCount.textContent = count + ' characters';
+            
+            if (count > 1000) {
+                charCount.classList.add('text-warning');
+            } else {
+                charCount.classList.remove('text-warning');
+            }
+        }
+        
+        contentTextarea.addEventListener('input', updateCharCount);
+        updateCharCount(); // Initial count
+        
+        // Auto-resize textarea
+        contentTextarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        
+        // Prompt buttons
+        promptButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const prompt = this.dataset.prompt;
+                const currentContent = contentTextarea.value;
+                
+                if (currentContent.trim() === '') {
+                    contentTextarea.value = prompt + '\n\n';
+                } else {
+                    contentTextarea.value = currentContent + '\n\n' + prompt + '\n\n';
+                }
+                
+                contentTextarea.focus();
+                contentTextarea.setSelectionRange(contentTextarea.value.length, contentTextarea.value.length);
+                updateCharCount();
+                
+                // Trigger auto-resize
+                contentTextarea.style.height = 'auto';
+                contentTextarea.style.height = contentTextarea.scrollHeight + 'px';
+            });
+        });
+        
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            const content = contentTextarea.value.trim();
+            
+            if (content === '') {
+                e.preventDefault();
+                alert('Please write something in your journal entry before saving.');
+                contentTextarea.focus();
+                return false;
+            }
+        });
+        
+        // Auto-save draft (optional feature)
+        let autoSaveTimer;
+        contentTextarea.addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(function() {
+                // Save draft to localStorage
+                const draft = {
+                    title: document.getElementById('id_title').value,
+                    content: contentTextarea.value,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('journal_draft', JSON.stringify(draft));
+            }, 2000); // Save after 2 seconds of inactivity
+        });
+        
+        // Load draft on page load
+        const savedDraft = localStorage.getItem('journal_draft');
+        if (savedDraft && contentTextarea.value.trim() === '') {
+            const draft = JSON.parse(savedDraft);
+            const draftAge = new Date() - new Date(draft.timestamp);
+            
+            // Only load draft if it's less than 24 hours old
+            if (draftAge < 24 * 60 * 60 * 1000) {
+                if (confirm('We found a saved draft from ' + new Date(draft.timestamp).toLocaleString() + '. Would you like to restore it?')) {
+                    document.getElementById('id_title').value = draft.title || '';
+                    contentTextarea.value = draft.content || '';
+                    updateCharCount();
+                }
+            }
+        }
+        
+        // Clear draft on successful submit
+        form.addEventListener('submit', function() {
+            localStorage.removeItem('journal_draft');
+        });
+        
+        // Focus on content textarea
+        contentTextarea.focus();
+    });
+</script>
+{% endblock %}

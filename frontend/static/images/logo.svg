@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="90" fill="#f1f8ff" stroke="#0d6efd" stroke-width="4"/>
+  
+  <!-- Brain Icon -->
+  <path d="M100 40 C 60 40, 50 70, 50 90 C 50 110, 60 120, 80 120 C 90 120, 95 115, 100 110 C 105 115, 110 120, 120 120 C 140 120, 150 110, 150 90 C 150 70, 140 40, 100 40 Z" fill="#0d6efd" opacity="0.8"/>
+  
+  <!-- Heart Icon (representing emotions) -->
+  <path d="M100 140 C 90 130, 70 130, 60 140 C 50 150, 50 170, 100 180 C 150 170, 150 150, 140 140 C 130 130, 110 130, 100 140 Z" fill="#ff6384" opacity="0.8"/>
+  
+  <!-- Text -->
+  <text x="100" y="90" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#ffffff">Mind</text>
+  <text x="100" y="160" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#ffffff">Mate</text>
+</svg>

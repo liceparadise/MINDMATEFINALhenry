@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}My Journal - MindMate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .journal-card {
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+    
+    .journal-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .journal-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .journal-preview {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+    
+    .empty-journal {
+        text-align: center;
+        padding: 50px 0;
+    }
+    
+    .empty-journal i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Journal</h2>
+        <a href="{% url 'add_journal' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>New Entry
+        </a>
+    </div>
+    
+    {% if journals %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for journal in journals %}
+                <div class="col">
+                    <div class="card journal-card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ journal.title }}</h5>
+                            <p class="journal-date mb-2">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                {{ journal.created_at|date:"F j, Y" }}
+                            </p>
+                            <p class="card-text journal-preview">{{ journal.content|truncatechars:150 }}</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="{% url 'view_journal' journal.id %}" class="btn btn-sm btn-outline-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <nav aria-label="Journal pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-journal">
+            <i class="far fa-book"></i>
+            <h4>Your journal is empty</h4>
+            <p class="text-muted">Start writing your thoughts and feelings to track your emotional journey.</p>
+            <a href="{% url 'add_journal' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-pen me-2"></i>Write Your First Entry
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

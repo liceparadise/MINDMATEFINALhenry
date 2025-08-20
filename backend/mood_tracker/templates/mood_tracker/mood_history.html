@@ -1,0 +1,425 @@
+{% extends 'mood_tracker/base.html' %}
+
+{% block title %}Mood History - MindMate{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h2 class="mb-2">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Mood Analytics & History
+                </h2>
+                <p class="mb-0 opacity-75">
+                    Visualize your emotional journey and discover patterns in your mood data
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Range Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="start_date" class="form-label">
+                            <i class="fas fa-calendar-alt me-2"></i>Start Date
+                        </label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="end_date" class="form-label">
+                            <i class="fas fa-calendar-alt me-2"></i>End Date
+                        </label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-2"></i>Apply Filter
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetDateRange()">
+                            <i class="fas fa-undo me-2"></i>Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Line Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Mood Trends Over Time
+                </h5>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="chartType" id="lineChart" checked>
+                    <label class="btn btn-outline-primary btn-sm" for="lineChart">Line</label>
+                    
+                    <input type="radio" class="btn-check" name="chartType" id="barChart">
+                    <label class="btn btn-outline-primary btn-sm" for="barChart">Bar</label>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="moodTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mood Distribution -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Mood Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="moodDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-2">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h5 class="card-title">{{ mood_entries|length }}</h5>
+                <p class="card-text text-muted">Total Entries</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-success mb-2">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <h5 class="card-title">7.2</h5>
+                <p class="card-text text-muted">Average Mood</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-warning mb-2">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h5 class="card-title">Happy</h5>
+                <p class="card-text text-muted">Most Common</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="display-4 text-info mb-2">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <h5 class="card-title">12</h5>
+                <p class="card-text text-muted">Day Streak</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Entries Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Recent Mood Entries
+                </h5>
+                <div>
+                    <a href="{% url 'export_data' %}?type=csv&data=mood" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-download me-2"></i>Export CSV
+                    </a>
+                    <a href="{% url 'add_mood' %}" class="btn btn-primary btn-sm ms-2">
+                        <i class="fas fa-plus me-2"></i>Add Entry
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if mood_entries %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Mood</th>
+                                    <th>Intensity</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in mood_entries|slice:":20" %}
+                                    <tr>
+                                        <td>{{ entry.date|date:"M d, Y" }}</td>
+                                        <td>{{ entry.time|time:"g:i A" }}</td>
+                                        <td>
+                                            <span class="badge bg-primary rounded-pill">
+                                                {{ entry.get_mood_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress me-2" style="width: 60px; height: 8px;">
+                                                    <div class="progress-bar" role="progressbar" 
+                                                         style="width: {{ entry.intensity }}0%" 
+                                                         aria-valuenow="{{ entry.intensity }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="10">
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ entry.intensity }}/10</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if entry.notes %}
+                                                <span class="text-muted" title="{{ entry.notes }}">
+                                                    {{ entry.notes|truncatechars:50 }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if mood_entries|length > 20 %}
+                        <div class="text-center mt-3">
+                            <p class="text-muted">Showing 20 of {{ mood_entries|length }} entries</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-chart-line fa-3x opacity-25"></i>
+                        </div>
+                        <h5 class="text-muted">No mood entries found</h5>
+                        <p class="text-muted">Start tracking your mood to see analytics and trends</p>
+                        <a href="{% url 'add_mood' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Your First Mood Entry
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Chart data from Django
+        const chartDates = {{ chart_dates|safe }};
+        const chartIntensities = {{ chart_intensities|safe }};
+        const moodLabels = {{ mood_labels|safe }};
+        const moodCounts = {{ mood_counts|safe }};
+        
+        // Mood Trend Chart
+        const trendCtx = document.getElementById('moodTrendChart').getContext('2d');
+        let trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: chartDates.map(date => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Mood Intensity',
+                    data: chartIntensities,
+                    borderColor: '#7dd3fc',
+                    backgroundColor: 'rgba(125, 211, 252, 0.2)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointStyle: {{ chart_moods|safe }}.map(mood => {
+                        switch(mood) {
+                            case 'Very Happy':
+                                return '😄';
+                            case 'Happy':
+                                return '😊';
+                            case 'Excited':
+                                return '😃';
+                            case 'Calm':
+                                return '😌';
+                            case 'Content':
+                                return '🙂';
+                            case 'Neutral':
+                                return '😐';
+                            case 'Tired':
+                                return '😫';
+                            case 'Sad':
+                                return '😞';
+                            case 'Angry':
+                                return '😠';
+                            case 'Anxious':
+                                return '😰';
+                            case 'Stressed':
+                                return '😩';
+                            default:
+                                return '😐';
+                        }
+                    }),
+                    pointRadius: 15,
+                    pointHoverRadius: 18
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            stepSize: 2
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Mood Distribution Chart
+        const distributionCtx = document.getElementById('moodDistributionChart').getContext('2d');
+        new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: moodLabels,
+                datasets: [{
+                    data: moodCounts,
+                    backgroundColor: [
+                        '#7dd3fc',
+                        '#86efac',
+                        '#67e8f9',
+                        '#4ade80',
+                        '#0ea5e9',
+                        '#22d3ee',
+                        '#34d399',
+                        '#6ee7b7'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Chart type toggle
+        const chartTypeInputs = document.querySelectorAll('input[name="chartType"]');
+        chartTypeInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.checked) {
+                    trendChart.destroy();
+                    
+                    const newType = this.id === 'lineChart' ? 'line' : 'bar';
+                    trendChart = new Chart(trendCtx, {
+                        type: newType,
+                        data: {
+                            labels: chartDates.map(date => {
+                                const d = new Date(date);
+                                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            }),
+                            datasets: [{
+                                label: 'Mood Intensity',
+                                data: chartIntensities,
+                                borderColor: '#7dd3fc',
+                                backgroundColor: newType === 'line' ? 'rgba(125, 211, 252, 0.2)' : '#7dd3fc',
+                                borderWidth: newType === 'line' ? 3 : 0,
+                                fill: newType === 'line',
+                                tension: newType === 'line' ? 0.4 : 0,
+                                pointBackgroundColor: '#7dd3fc',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: newType === 'line' ? 6 : 0,
+                                pointHoverRadius: newType === 'line' ? 8 : 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 10,
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    },
+                                    ticks: {
+                                        stepSize: 2
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    });
+    
+    function resetDateRange() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 30);
+        
+        document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+        document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}MindMate - Your Mental Health Companion{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center min-vh-75">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Track Your Mood, Improve Your Life</h1>
+            <p class="lead mb-4">
+                MindMate helps you understand your emotions by tracking your daily moods and providing insights into your mental well-being.
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start mb-4">
+                <a href="{% url 'signup' %}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+            </div>
+            <div class="features mt-5">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="feature-icon bg-primary bg-gradient text-white rounded-3 me-3">
+                                <i class="fas fa-chart-line p-3"></i>
+                            </div>
+                            <div>
+                                <h5>Track Your Moods</h5>
+                                <p class="text-muted">Record how you feel daily with our simple emoji-based system.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="feature-icon bg-success bg-gradient text-white rounded-3 me-3">
+                                <i class="fas fa-book p-3"></i>
+                            </div>
+                            <div>
+                                <h5>Journal Your Thoughts</h5>
+                                <p class="text-muted">Express yourself through guided journaling prompts.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="feature-icon bg-info bg-gradient text-white rounded-3 me-3">
+                                <i class="fas fa-bell p-3"></i>
+                            </div>
+                            <div>
+                                <h5>Set Reminders</h5>
+                                <p class="text-muted">Never forget to check in with customizable reminders.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="feature-icon bg-warning bg-gradient text-white rounded-3 me-3">
+                                <i class="fas fa-lock p-3"></i>
+                            </div>
+                            <div>
+                                <h5>Secure & Private</h5>
+                                <p class="text-muted">Your data is encrypted and securely stored.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+            {% load static %}
+            <img src="{% static 'images/mindmate-hero.svg' %}" alt="MindMate App" class="img-fluid rounded shadow-lg">
+        </div>
+    </div>
+    
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Understand Your Patterns</h5>
+                    <p class="card-text">Visualize your mood trends over time with beautiful charts and graphs.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-mobile-alt fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Access Anywhere</h5>
+                    <p class="card-text">MindMate works on all your devices with a responsive, user-friendly design.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-export fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Export Your Data</h5>
+                    <p class="card-text">Download your mood and journal history in CSV format anytime.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

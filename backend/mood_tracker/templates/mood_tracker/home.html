@@ -1,0 +1,191 @@
+{% extends 'mood_tracker/base.html' %}
+
+{% block title %}MindMate - Your Personal Mood Tracker{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center min-vh-100">
+    <div class="col-lg-6">
+        <div class="text-white">
+            <h1 class="display-4 fw-bold mb-4">
+                Track Your Mood,
+                <span class="text-warning">Transform Your Life</span>
+            </h1>
+            <p class="lead mb-4">
+                MindMate helps you understand your emotional patterns, track your mental health journey, 
+                and build better habits for a happier, more balanced life.
+            </p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Get Started Free
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="text-center">
+            <div class="card border-0 bg-transparent">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="card mood-card text-center p-3">
+                                <div class="display-1 text-success">😊</div>
+                                <h6 class="mt-2">Happy</h6>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card mood-card text-center p-3">
+                                <div class="display-1 text-primary">😌</div>
+                                <h6 class="mt-2">Calm</h6>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card mood-card text-center p-3">
+                                <div class="display-1 text-warning">😐</div>
+                                <h6 class="mt-2">Neutral</h6>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card mood-card text-center p-3">
+                                <div class="display-1 text-info">🤔</div>
+                                <h6 class="mt-2">Thoughtful</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row py-5">
+    <div class="col-12">
+        <h2 class="text-center text-white mb-5 display-5 fw-bold">Why Choose MindMate?</h2>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="display-4 text-primary mb-3">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h5 class="card-title">Mood Tracking</h5>
+                <p class="card-text">
+                    Log your daily emotions with our intuitive mood tracker. 
+                    Understand patterns and triggers in your emotional journey.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="display-4 text-success mb-3">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h5 class="card-title">Progress Analytics</h5>
+                <p class="card-text">
+                    Visualize your emotional trends with beautiful charts and insights. 
+                    Track your progress over time.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="display-4 text-warning mb-3">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h5 class="card-title">Personal Journal</h5>
+                <p class="card-text">
+                    Write down your thoughts and experiences. 
+                    Reflect on your day and gain deeper self-awareness.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="display-4 text-info mb-3">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h5 class="card-title">Smart Reminders</h5>
+                <p class="card-text">
+                    Never forget to check in with yourself. 
+                    Set personalized reminders for mood tracking.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="row py-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <h3 class="mb-4">Join Thousands of Users Improving Their Mental Health</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="display-4 text-primary fw-bold">10K+</div>
+                        <p class="text-muted">Active Users</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="display-4 text-success fw-bold">1M+</div>
+                        <p class="text-muted">Mood Entries</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="display-4 text-warning fw-bold">500K+</div>
+                        <p class="text-muted">Journal Entries</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="row py-5">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center py-5">
+                <h2 class="mb-4">Ready to Start Your Journey?</h2>
+                <p class="lead mb-4">
+                    Take the first step towards better mental health. 
+                    Join MindMate today and start tracking your mood!
+                </p>
+                <a href="{% url 'signup' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Create Your Account
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add some interactive animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate mood cards on hover
+        const moodCards = document.querySelectorAll('.mood-card');
+        moodCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.05)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Profile - MindMate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 500;
+        margin-right: 20px;
+    }
+    
+    .stat-card {
+        transition: transform 0.2s ease;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        color: #0d6efd;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .export-section {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="d-flex align-items-center">
+            <div class="profile-avatar">
+                {{ user.username.0|upper }}
+            </div>
+            <div>
+                <h2 class="mb-1">{{ user.username }}</h2>
+                <p class="mb-0 text-muted">{{ user.email }}</p>
+                <p class="mb-0"><small>Member since {{ user.date_joined|date:"F j, Y" }}</small></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Overview -->
+    <h3 class="mb-4">Your Stats</h3>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+        <div class="col">
+            <div class="card stat-card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-value">{{ total_mood_entries }}</div>
+                    <div class="stat-label">Total Mood Entries</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="stat-value">{{ total_journal_entries }}</div>
+                    <div class="stat-label">Journal Entries</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <div class="stat-value">{{ most_common_mood }}</div>
+                    <div class="stat-label">Most Common Mood</div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card shadow-sm text-center">
+                <div class="card-body">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value">{{ current_streak }}</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mood Distribution Chart -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Mood Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="profileMoodDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="monthlyActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Data Section -->
+    <div class="export-section">
+        <h4 class="mb-3">Export Your Data</h4>
+        <p>Download your mood and journal data for your records or to share with healthcare providers.</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Mood History</h5>
+                        <p class="card-text">Download all your mood entries with dates, intensities, and notes.</p>
+                        <a href="{% url 'export_data' %}?type=csv&data=mood" class="btn btn-primary">
+                            <i class="fas fa-download me-2"></i>Export as CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Journal Entries</h5>
+                        <p class="card-text">Download all your journal entries with titles and dates.</p>
+                        <a href="{% url 'export_data' %}?type=csv&data=journal" class="btn btn-primary">
+                            <i class="fas fa-download me-2"></i>Export as CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mood Distribution Chart
+        const distributionCtx = document.getElementById('profileMoodDistributionChart').getContext('2d');
+        const moodDistributionChart = new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ mood_labels|safe }},
+                datasets: [{
+                    data: {{ mood_counts|safe }},
+                    backgroundColor: [
+                        '#4BC0C0', // happy
+                        '#FFCD56', // excited
+                        '#36A2EB', // calm
+                        '#9966FF', // content
+                        '#C9CBCF', // tired
+                        '#FF6384', // sad
+                        '#FF9F40', // angry
+                        '#7ED6DF', // anxious
+                        '#E84393'  // stressed
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            boxWidth: 15,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Monthly Activity Chart
+        const activityCtx = document.getElementById('monthlyActivityChart').getContext('2d');
+        const monthlyActivityChart = new Chart(activityCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ month_labels|safe }},
+                datasets: [{
+                    label: 'Mood Entries',
+                    data: {{ monthly_mood_counts|safe }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Journal Entries',
+                    data: {{ monthly_journal_counts|safe }},
+                    backgroundColor: 'rgba(25, 135, 84, 0.7)',
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Entries'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

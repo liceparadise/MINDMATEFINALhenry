@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Track Your Mood - MindMate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mood-selector {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .mood-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .mood-option:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .mood-option.selected {
+        background-color: rgba(13, 110, 253, 0.1);
+        border: 2px solid #0d6efd;
+    }
+    
+    .mood-emoji {
+        font-size: 3rem;
+        margin-bottom: 5px;
+    }
+    
+    .mood-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .intensity-slider {
+        width: 100%;
+        margin: 30px 0;
+    }
+    
+    .intensity-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">How are you feeling today?</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Mood Selection -->
+                        <div class="mb-4">
+                            <label class="form-label">Select your mood:</label>
+                            <div class="mood-selector">
+                                <div class="mood-option" data-mood="happy">
+                                    <div class="mood-emoji">😊</div>
+                                    <div class="mood-label">Happy</div>
+                                </div>
+                                <div class="mood-option" data-mood="excited">
+                                    <div class="mood-emoji">😃</div>
+                                    <div class="mood-label">Excited</div>
+                                </div>
+                                <div class="mood-option" data-mood="calm">
+                                    <div class="mood-emoji">😌</div>
+                                    <div class="mood-label">Calm</div>
+                                </div>
+                                <div class="mood-option" data-mood="content">
+                                    <div class="mood-emoji">🙂</div>
+                                    <div class="mood-label">Content</div>
+                                </div>
+                                <div class="mood-option" data-mood="tired">
+                                    <div class="mood-emoji">😴</div>
+                                    <div class="mood-label">Tired</div>
+                                </div>
+                                <div class="mood-option" data-mood="sad">
+                                    <div class="mood-emoji">😢</div>
+                                    <div class="mood-label">Sad</div>
+                                </div>
+                                <div class="mood-option" data-mood="angry">
+                                    <div class="mood-emoji">😠</div>
+                                    <div class="mood-label">Angry</div>
+                                </div>
+                                <div class="mood-option" data-mood="anxious">
+                                    <div class="mood-emoji">😰</div>
+                                    <div class="mood-label">Anxious</div>
+                                </div>
+                                <div class="mood-option" data-mood="stressed">
+                                    <div class="mood-emoji">😫</div>
+                                    <div class="mood-label">Stressed</div>
+                                </div>
+                            </div>
+                            {{ form.mood.errors }}
+                            <div class="d-none">
+                                {{ form.mood }}
+                            </div>
+                        </div>
+                        
+                        <!-- Intensity Slider -->
+                        <div class="mb-4">
+                            <label for="id_intensity" class="form-label">How intense is this feeling? (1-10)</label>
+                            <div class="intensity-slider">
+                                {{ form.intensity }}
+                            </div>
+                            <div class="intensity-labels">
+                                <span>Mild</span>
+                                <span>Moderate</span>
+                                <span>Intense</span>
+                            </div>
+                            {{ form.intensity.errors }}
+                        </div>
+                        
+                        <!-- Notes -->
+                        <div class="mb-4">
+                            <label for="id_notes" class="form-label">Any notes about how you're feeling? (Optional)</label>
+                            {{ form.notes }}
+                            {{ form.notes.errors }}
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Save Mood</button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mood selection
+        const moodOptions = document.querySelectorAll('.mood-option');
+        const moodSelect = document.getElementById('id_mood');
+        
+        moodOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                moodOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Set the value in the hidden select
+                const mood = this.getAttribute('data-mood');
+                moodSelect.value = mood;
+            });
+        });
+        
+        // Set initial selection if form has a value
+        if (moodSelect.value) {
+            const selectedOption = document.querySelector(`.mood-option[data-mood="${moodSelect.value}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+        }
+        
+        // Intensity slider styling
+        const intensitySlider = document.getElementById('id_intensity');
+        intensitySlider.classList.add('form-range');
+        
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            if (!moodSelect.value) {
+                event.preventDefault();
+                alert('Please select a mood before submitting.');
+            }
+        });
+    });
+</script>
+{% endblock %}

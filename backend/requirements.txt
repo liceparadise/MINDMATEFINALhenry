@@ -1,0 +1,28 @@
+# MindMate - Dependencies
+
+# Django and related packages
+Django==5.2.3
+django-crispy-forms==2.0
+crispy-bootstrap5==0.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+
+# Firebase integration
+firebase-admin==6.2.0
+pyrebase4==4.7.1
+setuptools>=65.0.0
+
+# Image processing
+Pillow==10.1.0
+
+# Data handling and export
+pandas==2.1.2
+
+# Date and time handling
+python-dateutil==2.8.2
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Development tools
+django-debug-toolbar==4.2.0

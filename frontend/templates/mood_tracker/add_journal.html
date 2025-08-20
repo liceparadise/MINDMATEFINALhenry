@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Journal Entry - MindMate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .journal-prompts {
+        margin-bottom: 20px;
+    }
+    
+    .prompt-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        height: 100%;
+    }
+    
+    .prompt-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .journal-content {
+        min-height: 250px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Write in Your Journal</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Journal Prompts -->
+                    <div class="journal-prompts mb-4">
+                        <h5>Need inspiration? Try one of these prompts:</h5>
+                        <div class="row row-cols-1 row-cols-md-2 g-3 mt-2">
+                            <div class="col">
+                                <div class="card h-100 prompt-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Reflect on your day</h6>
+                                        <p class="card-text">What were the highlights and challenges of your day? How did they make you feel?</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card h-100 prompt-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Gratitude</h6>
+                                        <p class="card-text">What are three things you're grateful for today? Why do they matter to you?</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card h-100 prompt-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Self-care</h6>
+                                        <p class="card-text">What did you do today to take care of yourself? What else could you do?</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card h-100 prompt-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Tomorrow's goals</h6>
+                                        <p class="card-text">What are your intentions for tomorrow? What would make it a good day?</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Title</label>
+                            {{ form.title|as_crispy_field }}
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="mb-3">
+                            <label for="id_content" class="form-label">Journal Entry</label>
+                            {{ form.content|as_crispy_field }}
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Save Journal Entry</button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle prompt card clicks
+        const promptCards = document.querySelectorAll('.prompt-card');
+        const contentField = document.getElementById('id_content');
+        
+        promptCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const title = this.querySelector('.card-title').textContent;
+                const prompt = this.querySelector('.card-text').textContent;
+                
+                // Set the title if it's empty
+                const titleField = document.getElementById('id_title');
+                if (!titleField.value) {
+                    titleField.value = title;
+                }
+                
+                // Add the prompt to the content field
+                if (contentField.value) {
+                    contentField.value += '\n\n' + prompt + '\n';
+                } else {
+                    contentField.value = prompt + '\n';
+                }
+                
+                // Focus on the content field
+                contentField.focus();
+                contentField.setSelectionRange(contentField.value.length, contentField.value.length);
+            });
+        });
+        
+        // Enhance textarea
+        contentField.classList.add('journal-content');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends 'mood_tracker/base.html' %}
+
+{% block title %}My Journals - MindMate{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="fas fa-book me-2"></i>
+                            My Journal Entries
+                        </h2>
+                        <p class="mb-0 opacity-75">
+                            Reflect on your thoughts and track your personal growth journey
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="{% url 'add_journal' %}" class="btn btn-light btn-lg">
+                            <i class="fas fa-plus-circle me-2"></i>New Entry
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="searchInput" class="form-label">
+                            <i class="fas fa-search me-2"></i>Search Journals
+                        </label>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search by title or content...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sortSelect" class="form-label">
+                            <i class="fas fa-sort me-2"></i>Sort By
+                        </label>
+                        <select class="form-select" id="sortSelect">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="title">Title A-Z</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+                            <i class="fas fa-times me-2"></i>Clear
+                        </button>
+                        <a href="{% url 'export_data' %}?type=csv&data=journal" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-download me-2"></i>Export
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Journal Entries -->
+<div class="row" id="journalContainer">
+    {% if journals %}
+        {% for journal in journals %}
+            <div class="col-lg-6 mb-4 journal-entry" 
+                 data-title="{{ journal.title|lower }}" 
+                 data-content="{{ journal.content|lower }}" 
+                 data-date="{{ journal.created_at|date:'Y-m-d' }}">
+                <div class="card h-100 journal-card">
+                    <div class="card-header d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">
+                                {% if journal.title %}
+                                    {{ journal.title }}
+                                {% else %}
+                                    <span class="text-muted">Untitled Entry</span>
+                                {% endif %}
+                            </h5>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ journal.created_at|date:"M d, Y" }} at {{ journal.created_at|time:"g:i A" }}
+                            </small>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'view_journal' journal.id %}">
+                                        <i class="fas fa-eye me-2"></i>View Full Entry
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item text-danger" onclick="deleteJournal('{{ journal.id }}')">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            {{ journal.content|truncatewords:30 }}
+                        </p>
+                        
+                        {% if journal.mood_entry %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">
+                                    <i class="fas fa-heart me-1"></i>
+                                    {{ journal.mood_entry.get_mood_display }}
+                                </span>
+                                <small class="text-muted">{{ journal.mood_entry.intensity }}/10</small>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                {{ journal.content|length }} characters
+                            </small>
+                            <a href="{% url 'view_journal' journal.id %}" class="btn btn-outline-primary btn-sm">
+                                Read More <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="text-muted mb-4">
+                        <i class="fas fa-book fa-4x opacity-25"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Journal Entries Yet</h4>
+                    <p class="text-muted mb-4">
+                        Start your journaling journey today! Writing down your thoughts and experiences 
+                        can help you process emotions and track your personal growth.
+                    </p>
+                    <a href="{% url 'add_journal' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-pen me-2"></i>Write Your First Entry
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- No Results Message -->
+<div class="row d-none" id="noResults">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-4">
+                <div class="text-muted mb-3">
+                    <i class="fas fa-search fa-3x opacity-25"></i>
+                </div>
+                <h5 class="text-muted">No entries found</h5>
+                <p class="text-muted">Try adjusting your search terms or filters</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination (if needed) -->
+{% if journals|length > 12 %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Journal pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                </li>
+                <li class="page-item active">
+                    <a class="page-link" href="#">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">2</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .journal-card {
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .journal-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .journal-entry.hidden {
+        display: none;
+    }
+    
+    .card-text {
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const journalContainer = document.getElementById('journalContainer');
+        const noResults = document.getElementById('noResults');
+        const journalEntries = document.querySelectorAll('.journal-entry');
+        
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterAndSort();
+        });
+        
+        // Sort functionality
+        sortSelect.addEventListener('change', function() {
+            filterAndSort();
+        });
+        
+        function filterAndSort() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const sortBy = sortSelect.value;
+            let visibleEntries = [];
+            
+            // Filter entries
+            journalEntries.forEach(entry => {
+                const title = entry.dataset.title;
+                const content = entry.dataset.content;
+                const isVisible = title.includes(searchTerm) || content.includes(searchTerm);
+                
+                if (isVisible) {
+                    entry.classList.remove('hidden');
+                    visibleEntries.push(entry);
+                } else {
+                    entry.classList.add('hidden');
+                }
+            });
+            
+            // Sort visible entries
+            visibleEntries.sort((a, b) => {
+                switch (sortBy) {
+                    case 'oldest':
+                        return new Date(a.dataset.date) - new Date(b.dataset.date);
+                    case 'title':
+                        return a.dataset.title.localeCompare(b.dataset.title);
+                    case 'newest':
+                    default:
+                        return new Date(b.dataset.date) - new Date(a.dataset.date);
+                }
+            });
+            
+            // Reorder DOM elements
+            visibleEntries.forEach(entry => {
+                journalContainer.appendChild(entry);
+            });
+            
+            // Show/hide no results message
+            if (visibleEntries.length === 0 && journalEntries.length > 0) {
+                noResults.classList.remove('d-none');
+            } else {
+                noResults.classList.add('d-none');
+            }
+        }
+        
+        // Clear search
+        window.clearSearch = function() {
+            searchInput.value = '';
+            sortSelect.value = 'newest';
+            filterAndSort();
+        };
+        
+        // Delete journal entry
+        window.deleteJournal = function(journalId) {
+            if (confirm('Are you sure you want to delete this journal entry? This action cannot be undone.')) {
+                // In a real implementation, you would make an AJAX request to delete the entry
+                // For now, we'll just remove it from the DOM
+                const entryElement = document.querySelector(`[data-journal-id="${journalId}"]`);
+                if (entryElement) {
+                    entryElement.remove();
+                }
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    Journal entry deleted successfully.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+                
+                // Auto-dismiss after 3 seconds
+                setTimeout(() => {
+                    alert.remove();
+                }, 3000);
+            }
+        };
+        
+        // Add hover effects
+        journalEntries.forEach(entry => {
+            const card = entry.querySelector('.journal-card');
+            
+            entry.addEventListener('mouseenter', function() {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            });
+            
+            entry.addEventListener('mouseleave', function() {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            });
+        });
+    });
+</script>
+{% endblock %}

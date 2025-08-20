@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+
+{% block title %}Mood History - MindMate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .mood-filters {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .mood-entry {
+        border-left: 5px solid #0d6efd;
+        padding-left: 15px;
+        margin-bottom: 20px;
+        transition: transform 0.2s ease;
+    }
+    
+    .mood-entry:hover {
+        transform: translateX(5px);
+    }
+    
+    .mood-emoji {
+        font-size: 2rem;
+        margin-right: 10px;
+    }
+    
+    .mood-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .mood-intensity {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-left: 10px;
+    }
+    
+    .intensity-low {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .intensity-medium {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+    
+    .intensity-high {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+    
+    .chart-container {
+        height: 400px;
+        margin-bottom: 30px;
+    }
+    
+    .empty-history {
+        text-align: center;
+        padding: 50px 0;
+    }
+    
+    .empty-history i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Your Mood History</h2>
+    
+    {% if mood_entries %}
+        <!-- Filters -->
+        <div class="mood-filters">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="mood" class="form-label">Mood</label>
+                    <select class="form-select" id="mood" name="mood">
+                        <option value="">All Moods</option>
+                        {% for mood_choice in mood_choices %}
+                            <option value="{{ mood_choice.0 }}" {% if mood == mood_choice.0 %}selected{% endif %}>{{ mood_choice.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                    <a href="{% url 'mood_history' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-2"></i>Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0">Mood Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+                            <canvas id="moodDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0">Mood Intensity Over Time</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+                            <canvas id="moodIntensityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mood Entries List -->
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Mood Entries</h5>
+                <a href="{% url 'export_data' %}?type=csv&data=mood{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-download me-2"></i>Export as CSV
+                </a>
+            </div>
+            <div class="card-body">
+                {% for entry in mood_entries %}
+                    <div class="mood-entry">
+                        <div class="d-flex align-items-center">
+                            <span class="mood-emoji">
+                                {% if entry.mood == 'happy' %}😊
+                                {% elif entry.mood == 'excited' %}😃
+                                {% elif entry.mood == 'calm' %}😌
+                                {% elif entry.mood == 'content' %}🙂
+                                {% elif entry.mood == 'tired' %}😴
+                                {% elif entry.mood == 'sad' %}😢
+                                {% elif entry.mood == 'angry' %}😠
+                                {% elif entry.mood == 'anxious' %}😰
+                                {% elif entry.mood == 'stressed' %}😫
+                                {% endif %}
+                            </span>
+                            <div>
+                                <h5 class="mb-0">
+                                    {{ entry.get_mood_display }}
+                                    {% if entry.intensity <= 3 %}
+                                        <span class="mood-intensity intensity-low">{{ entry.intensity }}/10</span>
+                                    {% elif entry.intensity <= 7 %}
+                                        <span class="mood-intensity intensity-medium">{{ entry.intensity }}/10</span>
+                                    {% else %}
+                                        <span class="mood-intensity intensity-high">{{ entry.intensity }}/10</span>
+                                    {% endif %}
+                                </h5>
+                                <p class="mood-date mb-0">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    {{ entry.created_at|date:"F j, Y" }} at {{ entry.created_at|date:"g:i A" }}
+                                </p>
+                            </div>
+                        </div>
+                        {% if entry.notes %}
+                            <div class="mt-2">
+                                <p class="mb-0">{{ entry.notes }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <nav aria-label="Mood history pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.mood %}&mood={{ request.GET.mood }}{% endif %}" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.mood %}&mood={{ request.GET.mood }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="?page={{ num }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.mood %}&mood={{ request.GET.mood }}{% endif %}">{{ num }}</a></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.mood %}&mood={{ request.GET.mood }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.mood %}&mood={{ request.GET.mood }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.start_date %}&start_date={{ request.GET.start_date }}{% endif %}{% if request.GET.end_date %}&end_date={{ request.GET.end_date }}{% endif %}{% if request.GET.mood %}&mood={{ request.GET.mood }}{% endif %}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-history">
+            <i class="far fa-chart-bar"></i>
+            <h4>No mood entries found</h4>
+            <p class="text-muted">{% if request.GET %}No entries match your filter criteria. Try adjusting your filters.{% else %}Start tracking your mood to see your emotional patterns over time.{% endif %}</p>
+            {% if not request.GET %}
+                <a href="{% url 'add_mood' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus-circle me-2"></i>Track Your Mood
+                </a>
+            {% else %}
+                <a href="{% url 'mood_history' %}" class="btn btn-outline-secondary mt-3">
+                    <i class="fas fa-redo me-2"></i>Reset Filters
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if mood_entries %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            // Mood Distribution Chart
+            const distributionCtx = document.getElementById('moodDistributionChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.moodDistributionChart instanceof Chart) {
+                window.moodDistributionChart.destroy();
+            }
+            
+            window.moodDistributionChart = new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ mood_labels|safe }},
+                datasets: [{
+                    data: {{ mood_counts|safe }},
+                    backgroundColor: [
+                        '#4BC0C0', // happy
+                        '#FFCD56', // excited
+                        '#36A2EB', // calm
+                        '#9966FF', // content
+                        '#C9CBCF', // tired
+                        '#FF6384', // sad
+                        '#FF9F40', // angry
+                        '#7ED6DF', // anxious
+                        '#E84393'  // stressed
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+            // Mood Intensity Chart
+            const intensityCtx = document.getElementById('moodIntensityChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.moodIntensityChart instanceof Chart) {
+                window.moodIntensityChart.destroy();
+            }
+            
+            // Create emoji images for chart points
+            const moodData = {{ chart_moods|safe }};
+            const emojiImages = [];
+            const emojiMap = {
+                'Happy': '😊',
+                'Excited': '😃',
+                'Calm': '😌',
+                'Content': '🙂',
+                'Tired': '😴',
+                'Sad': '😢',
+                'Angry': '😠',
+                'Anxious': '😰',
+                'Stressed': '😫'
+            };
+            
+            // Create canvas elements for each emoji
+            moodData.forEach(mood => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 24;
+                canvas.height = 24;
+                const ctx2d = canvas.getContext('2d');
+                ctx2d.font = '18px Arial';
+                ctx2d.textAlign = 'center';
+                ctx2d.textBaseline = 'middle';
+                ctx2d.fillText(emojiMap[mood] || '🙂', 12, 12);
+                emojiImages.push(canvas);
+            });
+            
+            window.moodIntensityChart = new Chart(intensityCtx, {
+            type: 'line',
+            data: {
+                labels: {{ dates|safe }},
+                datasets: [{
+                    label: 'Mood Intensity',
+                    data: {{ intensities|safe }},
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointStyle: emojiImages,
+                    pointRadius: 12,
+                    pointHoverRadius: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Intensity (1-10)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            label: function(context) {
+                                return `Intensity: ${context.raw}/10`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        } catch (error) {
+            console.error('Error creating charts:', error);
+            // Show error message in chart containers
+            const distributionContainer = document.querySelector('#moodDistributionChart').parentElement;
+            const intensityContainer = document.querySelector('#moodIntensityChart').parentElement;
+            
+            distributionContainer.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100"><p class="text-muted mb-0">Error loading chart. Please refresh the page.</p></div>';
+            intensityContainer.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100"><p class="text-muted mb-0">Error loading chart. Please refresh the page.</p></div>';
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
