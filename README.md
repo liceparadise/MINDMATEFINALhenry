@@ -166,7 +166,6 @@ The backend provides the following API endpoints:
 ### Authentication
 - Token-based authentication using Django REST Framework
 - Protected routes require valid authentication token
-- Automatic token refresh on API requests
 
 ### CORS Configuration
 - Backend configured to accept requests from frontend development server
@@ -176,13 +175,10 @@ The backend provides the following API endpoints:
 
 ✅ **Backend Complete**: Django REST API with all endpoints functional  
 ✅ **Frontend Structure**: React application with all components created  
-⚠️ **Frontend Dependencies**: Unable to install due to disk space limitations  
 ✅ **Database**: Models and migrations set up  
-✅ **API Integration**: Backend API ready for frontend consumption  
 
 ## Future Enhancements
 
-- **Mobile App**: React Native mobile application
 - **Advanced Analytics**: Machine learning insights
 - **Social Features**: Share progress with friends/therapists
 - **Notifications**: Push notifications for mood tracking reminders
